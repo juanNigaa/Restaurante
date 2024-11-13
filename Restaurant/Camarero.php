@@ -40,12 +40,14 @@ if (isset($_POST['mesa'])) {
         echo "<p>No hay pedidos para esta mesa.</p>";
     }
 
+    // Botón para agregar un nuevo pedido a esta mesa
+    echo '<p><a href="IngresaPedido.php?mesa=' . $numeroMesa . '">Agregar un nuevo pedido a esta mesa</a></p>';
+
     // Cerrar la conexión con la base de datos
     mysqli_close($conn);
 } else {
     echo "<p>No se ha seleccionado ninguna mesa.</p>";
 }
-
 ?>
 
 <p><a href="mesas.php">Volver a las mesas</a></p>
