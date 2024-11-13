@@ -7,18 +7,25 @@ if ($numeroMesa === 0) {
     exit;
 }
 
+
+
 // Manejo de pedidos en sesión temporal
 session_start();
 if (!isset($_SESSION['pedidos'])) {
     $_SESSION['pedidos'] = [];
 }
 
+// Limpiar pedidos si el botón 'limpiar' se ha pulsado
+if (isset($_POST['limpiar_pedidos'])) {
+    unset($_SESSION['pedidos']);
+}
+
 // Agregar pedido temporal al array de la sesión si se envía el formulario
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ID_comida'])) {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ID_comida'], $_POST['cantidad'], $_POST['precio'])) {
     $pedido = [
         'ID_comida' => $_POST['ID_comida'],
         'cantidad' => $_POST['cantidad'],
-        'imagen' => $_FILES['imagen']['name'], // Solo el nombre del archivo
+        'precio' => $_POST['precio'],  // Precio ingresado manualmente
         'ID_usuario' => $_POST['ID_usuario'],
         'notas' => $_POST['notas'],
         'Numero_mesa' => $numeroMesa
@@ -34,8 +41,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ID_comida'])) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ingresar Pedido</title>
     <style>
-        /* Incluye tu CSS aquí */
-        /* Basic Reset */
+        /* Tu CSS aquí */
         * {
             margin: 0;
             padding: 0;
@@ -112,6 +118,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ID_comida'])) {
     <form action="" method="POST" enctype="multipart/form-data">
         <h2>Realiza El Pedido para la Mesa <?= htmlspecialchars($numeroMesa) ?></h2>
 
+        <!-- Selector de Comida -->
         <select name="ID_comida" required>
             <option value="">Selecciona la comida</option>
             <?php
@@ -129,6 +136,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ID_comida'])) {
         </select>
 
         <input type="number" placeholder="Cantidad" name="cantidad" required>
+        
+        <!-- Campo para que el usuario ingrese el precio -->
+        <input type="number" step="0.01" placeholder="Precio" name="precio" required>
+        
         <input type="file" name="imagen" required>
         <input type="number" name="ID_usuario" placeholder="ID Usuario" required>
         <input type="text" name="notas" placeholder="Notas extra del cliente">
@@ -143,6 +154,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ID_comida'])) {
             <div class="pedido-item">
                 <p><strong>Comida ID:</strong> <?= htmlspecialchars($pedido['ID_comida']) ?></p>
                 <p><strong>Cantidad:</strong> <?= htmlspecialchars($pedido['cantidad']) ?></p>
+                <p><strong>Precio:</strong> $<?= htmlspecialchars($pedido['precio']) ?></p>
                 <p><strong>ID Usuario:</strong> <?= htmlspecialchars($pedido['ID_usuario']) ?></p>
                 <p><strong>Notas:</strong> <?= htmlspecialchars($pedido['notas']) ?></p>
                 <p><strong>Número de Mesa:</strong> <?= htmlspecialchars($pedido['Numero_mesa']) ?></p>
@@ -151,6 +163,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ID_comida'])) {
         <form action="Pedido.php" method="POST">
             <input type="hidden" name="pedidos" value='<?= json_encode($_SESSION['pedidos']) ?>'>
             <input type="submit" value="Confirmar Pedidos">
+        </form>
+         <!-- Botón para limpiar los pedidos -->
+         <form method="POST" style="margin-top: 10px;">
+            <input type="hidden" name="limpiar_pedidos" value="1">
+            <input type="submit" value="Limpiar Pedidos Pendientes">
         </form>
     <?php else: ?>
         <p>No hay pedidos en espera.</p>

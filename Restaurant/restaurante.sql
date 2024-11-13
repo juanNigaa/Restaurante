@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 13-11-2024 a las 14:20:21
+-- Tiempo de generación: 13-11-2024 a las 22:47:00
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.0.30
 
@@ -62,6 +62,16 @@ CREATE TABLE `pedidos` (
   `Numeromesa` int(11) NOT NULL,
   `Notas` varchar(100) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_spanish_ci;
+
+--
+-- Volcado de datos para la tabla `pedidos`
+--
+
+INSERT INTO `pedidos` (`ID_Pedido`, `ID_comida`, `Comida`, `Precio`, `Cantidad`, `Imagen`, `ID_usuario`, `Numeromesa`, `Notas`) VALUES
+(12, 1, '', 15, 1, 'Imagenes/pollito.jpg', 2, 1, 'Extra picante'),
+(13, 1, '', 15, 1, '', 2, 1, 'Extra picante'),
+(14, 2, '', 20, 1, '', 2, 2, 'Huevo cocido extra'),
+(15, 3, '', 20, 1, '', 2, 1, 'Con salsa de tomate');
 
 -- --------------------------------------------------------
 
@@ -183,7 +193,7 @@ ALTER TABLE `mesas`
 -- AUTO_INCREMENT de la tabla `pedidos`
 --
 ALTER TABLE `pedidos`
-  MODIFY `ID_Pedido` int(100) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `ID_Pedido` int(100) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
 
 --
 -- AUTO_INCREMENT de la tabla `productos`
