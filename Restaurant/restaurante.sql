@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 13-11-2024 a las 22:47:00
+-- Tiempo de generación: 17-11-2024 a las 23:37:55
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.0.30
 
@@ -41,7 +41,7 @@ CREATE TABLE `mesas` (
 --
 
 INSERT INTO `mesas` (`Numero_mesa`, `Estado`, `Numero_comensales`, `ID_usuario`) VALUES
-(1, 'Libre', 0, 2),
+(1, 'Libre', 8, 2),
 (2, 'Ocupada', 12, 4),
 (3, 'Ocupada', 5, 3);
 
@@ -68,10 +68,11 @@ CREATE TABLE `pedidos` (
 --
 
 INSERT INTO `pedidos` (`ID_Pedido`, `ID_comida`, `Comida`, `Precio`, `Cantidad`, `Imagen`, `ID_usuario`, `Numeromesa`, `Notas`) VALUES
-(12, 1, '', 15, 1, 'Imagenes/pollito.jpg', 2, 1, 'Extra picante'),
-(13, 1, '', 15, 1, '', 2, 1, 'Extra picante'),
-(14, 2, '', 20, 1, '', 2, 2, 'Huevo cocido extra'),
-(15, 3, '', 20, 1, '', 2, 1, 'Con salsa de tomate');
+(12, 1, 'pollo', 15, 1, 'Imagenes/pollito.jpg', 2, 1, 'Extra picante'),
+(13, 1, 'pollo', 15, 1, 'Imagenes/pollito.jpg', 2, 1, 'Extra picante'),
+(14, 2, 'Arepa con todo', 20, 1, 'Imagenes/arepaContodo.png', 2, 2, 'Huevo cocido extra'),
+(15, 3, 'Arroz con pollo', 20, 1, 'Imagenes/arrozcompollo.jpg', 2, 1, 'Con salsa de tomate'),
+(16, 4, 'Chuleta valluna', 15, 1, 'Imagenes/chuleta.jpg', 2, 1, 'Sin arroz');
 
 -- --------------------------------------------------------
 
@@ -193,7 +194,7 @@ ALTER TABLE `mesas`
 -- AUTO_INCREMENT de la tabla `pedidos`
 --
 ALTER TABLE `pedidos`
-  MODIFY `ID_Pedido` int(100) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
+  MODIFY `ID_Pedido` int(100) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
 
 --
 -- AUTO_INCREMENT de la tabla `productos`

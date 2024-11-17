@@ -15,16 +15,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['pedidos'])) {
             $notas = mysqli_real_escape_string($conn, $pedido['notas']);
             $Numero_mesa = intval($pedido['Numero_mesa']);
             
-            // Consulta para insertar el pedido
-            $sql = "INSERT INTO pedidos (ID_comida, cantidad, precio, ID_usuario, notas, Numeromesa)
-                    VALUES ('$ID_comida', '$cantidad', '$precio', '$ID_usuario', '$notas', '$Numero_mesa')";
+            // 1. Obtener el nombre de la comida desde la tabla productos
+            $consulta_comida = "SELECT comida FROM productos WHERE ID_comida = $ID_comida";
+            $result_comida = mysqli_query($conn, $consulta_comida);
             
-            if (mysqli_query($conn, $sql)) {
-                echo "Pedido insertado correctamente para la comida ID: $ID_comida<br>";
+            if ($result_comida && mysqli_num_rows($result_comida) > 0) {
+                // 2. Si existe la comida, obtener el nombre
+                $row_comida = mysqli_fetch_assoc($result_comida);
+                $comida = $row_comida['comida'];
+
+                // 3. Insertar el pedido en la tabla `pedidos` con ID_comida y el nombre de la comida
+                $sql = "INSERT INTO pedidos (ID_comida, comida, cantidad, precio, ID_usuario, notas, Numeromesa)
+                        VALUES ('$ID_comida', '$comida', '$cantidad', '$precio', '$ID_usuario', '$notas', '$Numero_mesa')";
+                
+                if (mysqli_query($conn, $sql)) {
+                    echo "Pedido insertado correctamente para la comida ID: $ID_comida ($comida)<br>";
+                } else {
+                    echo "Error al insertar el pedido: " . mysqli_error($conn) . "<br>";
+                }
             } else {
-                echo "Error al insertar el pedido: " . mysqli_error($conn) . "<br>";
+                echo "No se encontró la comida con ID: $ID_comida<br>";
             }
         }
+
         // Limpiar la sesión después de confirmar los pedidos
         session_start();
         unset($_SESSION['pedidos']);
@@ -32,6 +45,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['pedidos'])) {
         echo "No se recibieron pedidos.";
     }
 }
+
 mysqli_close($conn);
 ?>
 
