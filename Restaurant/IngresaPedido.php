@@ -7,8 +7,6 @@ if ($numeroMesa === 0) {
     exit;
 }
 
-
-
 // Manejo de pedidos en sesión temporal
 session_start();
 if (!isset($_SESSION['pedidos'])) {
@@ -25,12 +23,50 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ID_comida'], $_POST['
     $pedido = [
         'ID_comida' => $_POST['ID_comida'],
         'cantidad' => $_POST['cantidad'],
-        'precio' => $_POST['precio'],  // Precio ingresado manualmente
+        'precio' => $_POST['precio'], // Precio ingresado manualmente
         'ID_usuario' => $_POST['ID_usuario'],
         'notas' => $_POST['notas'],
         'Numero_mesa' => $numeroMesa
     ];
     $_SESSION['pedidos'][] = $pedido;
+}
+
+// Confirmar pedidos y actualizar número de comensales
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirmar_pedidos'])) {
+    include("conexion.php");
+
+    $pedidos = json_decode($_POST['pedidos'], true);
+    $numeroComensales = intval($_POST['numero_comensales']); // Recibir el número de comensales desde el formulario
+
+    if (!empty($pedidos)) {
+        // Procesar cada pedido y guardarlo en la base de datos
+        foreach ($pedidos as $pedido) {
+            $sql = "INSERT INTO pedidos (ID_comida, cantidad, precio, ID_usuario, notas, Numero_mesa) 
+                    VALUES (
+                        '" . $pedido['ID_comida'] . "',
+                        '" . $pedido['cantidad'] . "',
+                        '" . $pedido['precio'] . "',
+                        '" . $pedido['ID_usuario'] . "',
+                        '" . $pedido['notas'] . "',
+                        '" . $pedido['Numero_mesa'] . "'
+                    )";
+            mysqli_query($conn, $sql);
+        }
+
+        // Actualizar número de comensales de la mesa
+        $update_sql = "UPDATE mesas 
+                       SET Numero_comensales = '$numeroComensales' 
+                       WHERE Numero_mesa = '$numeroMesa'";
+        if (mysqli_query($conn, $update_sql)) {
+            echo "<p>Número de comensales actualizado correctamente para la Mesa $numeroMesa.</p>";
+        } else {
+            echo "<p>Error al actualizar el número de comensales: " . mysqli_error($conn) . "</p>";
+        }
+    }
+
+    // Limpiar los pedidos después de confirmar
+    unset($_SESSION['pedidos']);
+    mysqli_close($conn);
 }
 ?>
 
@@ -116,7 +152,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ID_comida'], $_POST['
 <body>
 <section>
     <form action="" method="POST" enctype="multipart/form-data">
-        <h2>Realiza El Pedido para la Mesa <?= htmlspecialchars($numeroMesa) ?></h2>
+        <h2>Realiza el Pedido para la Mesa <?= htmlspecialchars($numeroMesa) ?></h2>
 
         <!-- Selector de Comida -->
         <select name="ID_comida" required>
@@ -136,10 +172,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ID_comida'], $_POST['
         </select>
 
         <input type="number" placeholder="Cantidad" name="cantidad" required>
-        
-        <!-- Campo para que el usuario ingrese el precio -->
         <input type="number" step="0.01" placeholder="Precio" name="precio" required>
-        
         <input type="file" name="imagen" required>
         <input type="number" name="ID_usuario" placeholder="ID Usuario" required>
         <input type="text" name="notas" placeholder="Notas extra del cliente">
@@ -160,12 +193,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ID_comida'], $_POST['
                 <p><strong>Número de Mesa:</strong> <?= htmlspecialchars($pedido['Numero_mesa']) ?></p>
             </div>
         <?php endforeach; ?>
-        <form action="Pedido.php" method="POST">
+        <form action="" method="POST">
+            <h4>Número de Comensales:</h4>
+            <input type="number" name="numero_comensales" placeholder="Número de Comensales" required>
             <input type="hidden" name="pedidos" value='<?= json_encode($_SESSION['pedidos']) ?>'>
-            <input type="submit" value="Confirmar Pedidos">
+            <input type="submit" name="confirmar_pedidos" value="Confirmar Pedidos">
         </form>
-         <!-- Botón para limpiar los pedidos -->
-         <form method="POST" style="margin-top: 10px;">
+
+        <!-- Botón para limpiar los pedidos -->
+        <form method="POST" style="margin-top: 10px;">
             <input type="hidden" name="limpiar_pedidos" value="1">
             <input type="submit" value="Limpiar Pedidos Pendientes">
         </form>
@@ -173,7 +209,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ID_comida'], $_POST['
         <p>No hay pedidos en espera.</p>
     <?php endif; ?>
 
-    <p><a href="Camarero.php">Volver al Menú</a></p>  
+    <p><a href="Mesas.php">Volver al Menú</a></p>
 </section>
 </body>
 </html>

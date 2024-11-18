@@ -1,4 +1,12 @@
-<!DOCTYPE html>
+<?php
+include('Conexion.php');
+
+// Consulta para obtener el número de mesas registradas en la base de datos
+$query = "SELECT Numero_mesa FROM mesas";
+$result = mysqli_query($conn, $query);
+
+if (mysqli_num_rows($result) > 0) {
+    echo '<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -18,13 +26,6 @@
             color: #0078d7;
             margin-top: 20px;
             font-size: 2.5em;
-        }
-
-        h2 {
-            text-align: center;
-            color: #444;
-            font-size: 1.5em;
-            margin: 10px 0;
         }
 
         .mesas-container {
@@ -85,56 +86,35 @@
 <body>
 
 <h1>Selecciona una Mesa</h1>
-
-<div class="mesas-container">
-    <!-- Formulario para la Mesa 1 -->
-    <div class="mesa-card">
-        <h2>Mesa 1</h2>
-        <form action="Camarero.php" method="POST">
-            <input type="hidden" name="mesa" value="1">
-            <button type="submit">
-                <img src="Imagenes/mesa.jpg" id="mesa1" alt="Mesa 1">
-            </button>
-        </form>
-    </div>
+<div class="mesas-container">';
     
-    <!-- Formulario para la Mesa 2 -->
-    <div class="mesa-card">
-        <h2>Mesa 2</h2>
-        <form action="Camarero.php" method="POST">
-            <input type="hidden" name="mesa" value="2">
-            <button type="submit">
-                <img src="Imagenes/mesa.jpg" id="mesa2" alt="Mesa 2">
-            </button>
-        </form>
-    </div>
+    // Iterar sobre las mesas obtenidas de la base de datos
+    while ($row = mysqli_fetch_assoc($result)) {
+        $numeroMesa = $row['Numero_mesa'];
 
-    <!-- Formulario para la Mesa 3 -->
-    <div class="mesa-card">
-        <h2>Mesa 3</h2>
-        <form action="Camarero.php" method="POST">
-            <input type="hidden" name="mesa" value="3">
-            <button type="submit">
-                <img src="Imagenes/mesa.jpg" id="mesa3" alt="Mesa 3">
-            </button>
-        </form>
-    </div>
+        echo '
+        <div class="mesa-card">
+            <h2>Mesa ' . $numeroMesa . '</h2>
+            <form action="Camarero.php" method="POST">
+                <input type="hidden" name="mesa" value="' . $numeroMesa . '">
+                <button type="submit">
+                    <img src="Imagenes/mesa.jpg" alt="Mesa ' . $numeroMesa . '">
+                </button>
+            </form>
+        </div>
+        ';
+    }
 
-    <!-- Formulario para la Mesa 4 -->
-    <div class="mesa-card">
-        <h2>Mesa 4</h2>
-        <form action="Camarero.php" method="POST">
-            <input type="hidden" name="mesa" value="4">
-            <button type="submit">
-                <img src="Imagenes/mesa.jpg" id="mesa4" alt="Mesa 4">
-            </button>
-        </form>
-    </div>
-</div>
-
+    echo '</div>
 <div class="volver">
     <p><a href="Loggin.php">Volver al loggin</a></p>
 </div>
-
 </body>
-</html>
+</html>';
+} else {
+    echo '<p>No hay mesas registradas en la base de datos.</p>';
+}
+
+// Cerrar conexión
+mysqli_close($conn);
+?>
