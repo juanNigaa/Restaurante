@@ -7,65 +7,81 @@ if ($numeroMesa === 0) {
     exit;
 }
 
-// Manejo de pedidos en sesión temporal
+// Manejo de la sesión para líneas del pedido
 session_start();
-if (!isset($_SESSION['pedidos'])) {
-    $_SESSION['pedidos'] = [];
+if (!isset($_SESSION['lineas_pedido'])) {
+    $_SESSION['lineas_pedido'] = [];
+}
+
+// Cargar productos desde la base de datos
+include("conexion.php");
+$productosPorTipo = [];
+$query = "SELECT ID_comida, comida, tipo, precio, imagen FROM productos";
+$result = mysqli_query($conn, $query);
+
+if ($result) {
+    while ($row = mysqli_fetch_assoc($result)) {
+        $productosPorTipo[$row['tipo']][] = $row; // Agrupamos productos por tipo
+    }
+} else {
+    echo "<p>Error al cargar los productos: " . mysqli_error($conn) . "</p>";
 }
 
 // Limpiar pedidos si el botón 'limpiar' se ha pulsado
 if (isset($_POST['limpiar_pedidos'])) {
-    unset($_SESSION['pedidos']);
+    unset($_SESSION['lineas_pedido']);
 }
 
-// Agregar pedido temporal al array de la sesión si se envía el formulario
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ID_comida'], $_POST['cantidad'], $_POST['precio'])) {
-    $pedido = [
+// Agregar línea de pedido temporal
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ID_comida'], $_POST['cantidad'], $_POST['precio'], $_POST['nombre'])) {
+    $linea = [
         'ID_comida' => $_POST['ID_comida'],
         'cantidad' => $_POST['cantidad'],
-        'precio' => $_POST['precio'], // Precio ingresado manualmente
-        'ID_usuario' => $_POST['ID_usuario'],
-        'notas' => $_POST['notas'],
-        'Numero_mesa' => $numeroMesa
+        'precio' => $_POST['precio'],
+        'nombre' => $_POST['nombre'], // Para mostrar en el listado
     ];
-    $_SESSION['pedidos'][] = $pedido;
+    $_SESSION['lineas_pedido'][] = $linea;
 }
 
-// Confirmar pedidos y actualizar número de comensales
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirmar_pedidos'])) {
-    include("conexion.php");
+// Confirmar pedido completo
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirmar_pedido'])) {
+    $ID_usuario = intval($_POST['ID_usuario']);
+    $lineas_pedido = $_SESSION['lineas_pedido'];
 
-    $pedidos = json_decode($_POST['pedidos'], true);
-    $numeroComensales = intval($_POST['numero_comensales']); // Recibir el número de comensales desde el formulario
+    if (!empty($lineas_pedido)) {
+        // Crear el pedido en la tabla `pedidos` (sin ID_comida)
+        $sql_pedido = "INSERT INTO pedidos (Numeromesa, ID_usuario, fecha) 
+                       VALUES ('$numeroMesa', '$ID_usuario', NOW())";
+        if (mysqli_query($conn, $sql_pedido)) {
+            $ID_pedido = mysqli_insert_id($conn); // Obtener el ID del pedido recién creado
 
-    if (!empty($pedidos)) {
-        // Procesar cada pedido y guardarlo en la base de datos
-        foreach ($pedidos as $pedido) {
-            $sql = "INSERT INTO pedidos (ID_comida, cantidad, precio, ID_usuario, notas, Numero_mesa) 
-                    VALUES (
-                        '" . $pedido['ID_comida'] . "',
-                        '" . $pedido['cantidad'] . "',
-                        '" . $pedido['precio'] . "',
-                        '" . $pedido['ID_usuario'] . "',
-                        '" . $pedido['notas'] . "',
-                        '" . $pedido['Numero_mesa'] . "'
-                    )";
-            mysqli_query($conn, $sql);
-        }
+            // Insertar las líneas del pedido en la tabla `lineas_pedido`
+            foreach ($lineas_pedido as $linea) {
+                // Validar que el producto existe antes de insertar
+                $check_producto = mysqli_query($conn, "SELECT 1 FROM productos WHERE ID_comida = '{$linea['ID_comida']}'");
+                if (mysqli_num_rows($check_producto) > 0) {
+                    $sql_linea = "INSERT INTO lineas_pedido (ID_pedido, ID_comida, cantidad, precio) 
+                                  VALUES ('$ID_pedido', '{$linea['ID_comida']}', '{$linea['cantidad']}', '{$linea['precio']}')";
+                    if (!mysqli_query($conn, $sql_linea)) {
+                        echo "<p>Error al guardar la línea de pedido: " . mysqli_error($conn) . "</p>";
+                        exit;
+                    }
+                } else {
+                    echo "<p>Error: Producto con ID {$linea['ID_comida']} no existe.</p>";
+                    exit;
+                }
+            }
 
-        // Actualizar número de comensales de la mesa
-        $update_sql = "UPDATE mesas 
-                       SET Numero_comensales = '$numeroComensales' 
-                       WHERE Numero_mesa = '$numeroMesa'";
-        if (mysqli_query($conn, $update_sql)) {
-            echo "<p>Número de comensales actualizado correctamente para la Mesa $numeroMesa.</p>";
+            echo "<p>Pedido confirmado exitosamente.</p>";
         } else {
-            echo "<p>Error al actualizar el número de comensales: " . mysqli_error($conn) . "</p>";
+            echo "<p>Error al guardar el pedido: " . mysqli_error($conn) . "</p>";
         }
+    } else {
+        echo "<p>No hay productos en el pedido.</p>";
     }
 
-    // Limpiar los pedidos después de confirmar
-    unset($_SESSION['pedidos']);
+    // Limpiar las líneas de pedido después de confirmar
+    unset($_SESSION['lineas_pedido']);
     mysqli_close($conn);
 }
 ?>
@@ -74,10 +90,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirmar_pedidos']))
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ingresar Pedido</title>
     <style>
-        /* Tu CSS aquí */
+        /* Estilo básico para el formulario */
         * {
             margin: 0;
             padding: 0;
@@ -147,69 +162,106 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirmar_pedidos']))
             background-color: #f8f9fa;
             text-align: left;
         }
+
+        .preview {
+            margin-top: 15px;
+        }
+
+        .preview img {
+            max-width: 100%;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+        }
+        img {
+            width: 200px; /* Establecer un tamaño fijo para el ancho */
+            height: 200px; /* Establecer un tamaño fijo para la altura */
+            object-fit: cover; /* Asegura que la imagen mantenga la proporción sin distorsionarse */
+        }
     </style>
 </head>
 <body>
 <section>
-    <form action="" method="POST" enctype="multipart/form-data">
-        <h2>Realiza el Pedido para la Mesa <?= htmlspecialchars($numeroMesa) ?></h2>
+    <h2>Pedido para la Mesa <?= htmlspecialchars($numeroMesa) ?></h2>
 
-        <!-- Selector de Comida -->
-        <select name="ID_comida" required>
-            <option value="">Selecciona la comida</option>
-            <?php
-            include("conexion.php");
-            $consulta_productos = "SELECT ID_comida, comida FROM productos";
-            $result_productos = mysqli_query($conn, $consulta_productos);
-
-            if (mysqli_num_rows($result_productos) > 0) {
-                while ($row = mysqli_fetch_assoc($result_productos)) {
-                    echo "<option value='" . $row['ID_comida'] . "'>" . $row['comida'] . "</option>";
-                }
-            }
-            mysqli_close($conn);
-            ?>
+    <form method="POST">
+        <!-- Selector de Tipo de Producto -->
+        <label for="tipo_producto">Selecciona Tipo de Producto:</label>
+        <select id="tipo_producto" name="tipo_producto" onchange="this.form.submit()" required>
+            <option value="">--Seleccionar--</option>
+            <?php foreach (array_keys($productosPorTipo) as $tipo): ?>
+                <option value="<?= htmlspecialchars($tipo) ?>" 
+                    <?= (isset($_POST['tipo_producto']) && $_POST['tipo_producto'] === $tipo) ? 'selected' : '' ?>>
+                    <?= htmlspecialchars($tipo) ?>
+                </option>
+            <?php endforeach; ?>
         </select>
-
-        <input type="number" placeholder="Cantidad" name="cantidad" required>
-        <input type="number" step="0.01" placeholder="Precio" name="precio" required>
-        <input type="file" name="imagen" required>
-        <input type="number" name="ID_usuario" placeholder="ID Usuario" required>
-        <input type="text" name="notas" placeholder="Notas extra del cliente">
-        <input type="hidden" name="Numero_mesa" value="<?= htmlspecialchars($numeroMesa) ?>">
-
-        <input type="submit" value="Agregar Pedido">
     </form>
 
-    <h3>Pedidos Pendientes</h3>
-    <?php if (!empty($_SESSION['pedidos'])): ?>
-        <?php foreach ($_SESSION['pedidos'] as $pedido): ?>
-            <div class="pedido-item">
-                <p><strong>Comida ID:</strong> <?= htmlspecialchars($pedido['ID_comida']) ?></p>
-                <p><strong>Cantidad:</strong> <?= htmlspecialchars($pedido['cantidad']) ?></p>
-                <p><strong>Precio:</strong> $<?= htmlspecialchars($pedido['precio']) ?></p>
-                <p><strong>ID Usuario:</strong> <?= htmlspecialchars($pedido['ID_usuario']) ?></p>
-                <p><strong>Notas:</strong> <?= htmlspecialchars($pedido['notas']) ?></p>
-                <p><strong>Número de Mesa:</strong> <?= htmlspecialchars($pedido['Numero_mesa']) ?></p>
-            </div>
-        <?php endforeach; ?>
-        <form action="" method="POST">
-            <h4>Número de Comensales:</h4>
-            <input type="number" name="numero_comensales" placeholder="Número de Comensales" required>
-            <input type="hidden" name="pedidos" value='<?= json_encode($_SESSION['pedidos']) ?>'>
-            <input type="submit" name="confirmar_pedidos" value="Confirmar Pedidos">
-        </form>
+    <?php if (isset($_POST['tipo_producto']) && !empty($_POST['tipo_producto'])): ?>
+        <?php $tipoSeleccionado = $_POST['tipo_producto']; ?>
 
-        <!-- Botón para limpiar los pedidos -->
-        <form method="POST" style="margin-top: 10px;">
-            <input type="hidden" name="limpiar_pedidos" value="1">
-            <input type="submit" value="Limpiar Pedidos Pendientes">
+        <form method="POST">
+            <input type="hidden" name="tipo_producto" value="<?= htmlspecialchars($tipoSeleccionado) ?>">
+            <!-- Selector de Producto -->
+            <label for="ID_comida">Selecciona Producto:</label>
+            <select id="ID_comida" name="ID_comida" required>
+                <option value="">--Seleccionar--</option>
+                <?php foreach ($productosPorTipo[$tipoSeleccionado] as $producto): ?>
+                    <option value="<?= $producto['ID_comida'] ?>" 
+                            data-precio="<?= $producto['precio'] ?>" 
+                            data-nombre="<?= htmlspecialchars($producto['comida']) ?>" 
+                            data-imagen="<?= htmlspecialchars($producto['imagen']) ?>">
+                        <?= htmlspecialchars($producto['comida']) ?> - $<?= $producto['precio'] ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
+
+            <!-- Vista previa de la imagen -->
+            <div class="preview" id="preview">
+                <p>Selecciona un producto para ver su imagen.</p>
+            </div>
+
+            <!-- Cantidad -->
+            <label for="cantidad">Cantidad:</label>
+            <input type="number" id="cantidad" name="cantidad" required>
+
+            <!-- Precio y Nombre (ocultos, se envían automáticamente) -->
+            <input type="hidden" id="precio" name="precio">
+            <input type="hidden" id="nombre" name="nombre">
+
+            <!-- Botón para agregar línea -->
+            <input type="submit" value="Agregar Producto">
         </form>
-    <?php else: ?>
-        <p>No hay pedidos en espera.</p>
     <?php endif; ?>
 
-    <p><a href="Mesas.php">Volver al Menú</a></p>
+    <h3>Productos en el Pedido</h3>
+    <?php if (!empty($_SESSION['lineas_pedido'])): ?>
+        <ul>
+            <?php foreach ($_SESSION['lineas_pedido'] as $linea): ?>
+                <li><?= $linea['cantidad'] ?>x <?= htmlspecialchars($linea['nombre']) ?> - $<?= $linea['precio'] ?></li>
+            <?php endforeach; ?>
+        </ul>
+        <form method="POST">
+            <input type="number" name="ID_usuario" placeholder="ID Usuario" required>
+            <input type="submit" name="confirmar_pedido" value="Confirmar Pedido">
+            <input type="submit" name="limpiar_pedidos" value="Limpiar Pedido">
+        </form>
+    <?php else: ?>
+        <p>No hay productos en el pedido.</p>
+    <?php endif; ?>
 </section>
+
+<script>
+    document.getElementById('ID_comida').addEventListener('change', function() {
+        var selectedOption = this.options[this.selectedIndex];
+        document.getElementById('precio').value = selectedOption.getAttribute('data-precio');
+        document.getElementById('nombre').value = selectedOption.getAttribute('data-nombre');
+        var imageUrl = selectedOption.getAttribute('data-imagen');
+        var preview = document.getElementById('preview');
+        preview.innerHTML = `<img src="${imageUrl}" alt="Vista previa">`;
+    });
+</script>
+<p><a href="mesas.php">Volver a las mesas</a></p>
+
 </body>
 </html>

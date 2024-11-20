@@ -86,6 +86,40 @@
         .volver a:hover {
             text-decoration: underline;
         }
+
+        .form-container {
+            margin: 20px auto;
+            padding: 20px;
+            width: 300px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        input[type="number"] {
+            width: 100%;
+            padding: 8px;
+            font-size: 1.2em;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+
+        input[type="submit"] {
+            background-color: #0078d7;
+            color: white;
+            padding: 10px;
+            width: 100%;
+            font-size: 1.2em;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        input[type="submit"]:hover {
+            background-color: #0053a4;
+        }
+
     </style>
 </head>
 <body>
@@ -97,52 +131,91 @@
 </h1>
 
 <?php
+// Incluir la conexión a la base de datos
 include("conexion.php");
 
 if (isset($_POST['mesa'])) {
-    // Recupera el número de mesa desde el formulario (POST)
-    $numeroMesa = intval($_POST['mesa']);  // Convertir a un número entero para evitar inyecciones SQL
+    // Recuperar el número de mesa desde el formulario (POST)
+    $numeroMesa = intval($_POST['mesa']);  // Convertir a número entero para evitar inyecciones SQL
 
     // Consulta para obtener los pedidos y el número de comensales de la mesa seleccionada
     $consulta = "
         SELECT 
-            p.*, 
-            m.Numero_comensales 
+            p.ID_Pedido, 
+            p.ID_usuario, 
+            p.Numeromesa, 
+            p.Fecha, 
+            lp.Cantidad, 
+            lp.precio, 
+            pr.Comida
         FROM 
             pedidos p
         INNER JOIN 
-            mesas m 
-        ON 
-            p.Numeromesa = m.Numero_mesa
+            lineas_pedido lp ON p.ID_Pedido = lp.ID_Pedido
+        INNER JOIN 
+            productos pr ON lp.ID_comida = pr.ID_comida
         WHERE 
             p.Numeromesa = $numeroMesa";
+
+    // Ejecutar la consulta
     $result = mysqli_query($conn, $consulta);
 
-    // Mostrar los errores de la consulta, si los hay
+    // Verificar si hubo errores en la consulta
     if (!$result) {
         die("Error en la consulta SQL: " . mysqli_error($conn));
     }
 
-    // Verificar si hay resultados
-    if (mysqli_num_rows($result) > 0) {
-        // Recuperar la primera fila para mostrar el número de comensales
-        $primerPedido = mysqli_fetch_array($result);
-        echo "<p><strong>Número de comensales: " . $primerPedido['Numero_comensales'] . "</strong></p>";
+    // Consulta para obtener el número de comensales de la mesa
+    $consultaMesas = "SELECT Numero_comensales FROM mesas WHERE Numero_mesa = $numeroMesa";
+    $resultMesas = mysqli_query($conn, $consultaMesas);
+    $numeroComensales = 0;
 
-        // Volver a recorrer los resultados desde el inicio
-        mysqli_data_seek($result, 0);
+    if ($resultMesas && mysqli_num_rows($resultMesas) > 0) {
+        $rowMesa = mysqli_fetch_assoc($resultMesas);
+        $numeroComensales = $rowMesa['Numero_comensales'];
+    }
+
+    // Mostrar formulario para cambiar número de comensales
+    echo '<div class="form-container">';
+    echo '<form action="" method="POST">';
+    echo '<input type="hidden" name="mesa" value="' . $numeroMesa . '">';
+    echo '<label for="comensales">Número de comensales:</label>';
+    echo '<input type="number" name="comensales" value="' . $numeroComensales . '" min="1" required>';
+    echo '<input type="submit" value="Actualizar Número de Comensales">';
+    echo '</form>';
+    echo '</div>';
+
+    // Si se envió el formulario para actualizar el número de comensales
+    if (isset($_POST['comensales'])) {
+        $nuevoNumeroComensales = intval($_POST['comensales']);
+        
+        // Actualizar el número de comensales en la base de datos
+        $updateQuery = "UPDATE mesas SET Numero_comensales = $nuevoNumeroComensales WHERE Numero_mesa = $numeroMesa";
+        if (mysqli_query($conn, $updateQuery)) {
+            echo "<p><strong>El número de comensales se ha actualizado a " . htmlspecialchars($nuevoNumeroComensales) . ".</strong></p>";
+            // Redirigir a la página de mesas.php después de actualizar
+            header("Location: mesas.php");
+            exit();
+        } else {
+            echo "<p>Error al actualizar el número de comensales.</p>";
+        }
+    }
+
+    // Verificar si hay resultados en la tabla de pedidos
+    if (mysqli_num_rows($result) > 0) {
+        echo "<p><strong>Número de comensales: " . htmlspecialchars($numeroComensales) . "</strong></p>";
 
         // Mostrar los pedidos
-        while ($row = mysqli_fetch_array($result)) {
-            echo "<strong>ID_Pedido: " . $row['ID_Pedido'] . "</strong><br>";
-            echo "Comida: " . $row['Comida'] . " <br>";
-            echo "Precio: " . $row['Precio'] . " € <br>";
-            echo "Cantidad: " . $row['Cantidad'] . " <br>";
-            echo "<img width=250 height=250 src='" . $row['Imagen'] . "' alt='Imagen de comida'><br>";
-            echo "Camarero: " . $row['ID_usuario'] . " <br>";
-            echo "Numero Mesa: " . $row['Numeromesa'] . " <br>";
-            echo "Notas extra: " . $row['Notas'] . " <br>";
+        while ($row = mysqli_fetch_assoc($result)) {
+            echo "<div class='pedido'>";
+            echo "<strong>ID Pedido: </strong>" . htmlspecialchars($row['ID_Pedido']) . "<br>";
+            echo "<strong>Comida: </strong>" . htmlspecialchars($row['Comida']) . "<br>";
+            echo "<strong>Precio por unidad: </strong>" . number_format($row['precio'], 2) . " €<br>";
+            echo "<strong>Cantidad: </strong>" . htmlspecialchars($row['Cantidad']) . "<br>";
+            echo "<strong>Camarero: </strong>" . htmlspecialchars($row['ID_usuario']) . "<br>";
+            echo "<strong>Número Mesa: </strong>" . htmlspecialchars($row['Numeromesa']) . "<br>";
             echo "<br>";
+            echo "</div>";
         }
     } else {
         echo "<p>No hay pedidos para esta mesa.</p>";
