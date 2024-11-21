@@ -1,8 +1,8 @@
 <?php
 include('Conexion.php');
 
-// Consulta para obtener el número de mesas registradas en la base de datos
-$query = "SELECT Numero_mesa FROM mesas";
+// Consulta para obtener las mesas y el número de comensales
+$query = "SELECT Numero_mesa, Numero_comensales, Estado FROM mesas";
 $result = mysqli_query($conn, $query);
 
 if (mysqli_num_rows($result) > 0) {
@@ -47,6 +47,10 @@ if (mysqli_num_rows($result) > 0) {
             transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
 
+        .mesa-card.occupied {
+            background-color: #ffcccc; /* Color diferente para mesas ocupadas */
+        }
+
         .mesa-card:hover {
             transform: translateY(-5px);
             box-shadow: 0 8px 12px rgba(0, 0, 0, 0.2);
@@ -87,13 +91,26 @@ if (mysqli_num_rows($result) > 0) {
 
 <h1>Selecciona una Mesa</h1>
 <div class="mesas-container">';
-    
+
     // Iterar sobre las mesas obtenidas de la base de datos
     while ($row = mysqli_fetch_assoc($result)) {
         $numeroMesa = $row['Numero_mesa'];
+        $numeroComensales = $row['Numero_comensales'];
+        $estado = $row['Estado'];
+
+        // Si hay más de un comensal, cambiar el color y marcar como ocupada
+        if ($numeroComensales > 1 && $estado !== 'ocupada') {
+            $estado = 'ocupada';
+            // Actualizar el estado en la base de datos
+            $updateQuery = "UPDATE mesas SET Estado='ocupada' WHERE Numero_mesa=$numeroMesa";
+            mysqli_query($conn, $updateQuery);
+        }
+
+        // Clase CSS para mesas ocupadas
+        $occupiedClass = $estado === 'ocupada' ? 'occupied' : '';
 
         echo '
-        <div class="mesa-card">
+        <div class="mesa-card ' . $occupiedClass . '">
             <h2>Mesa ' . $numeroMesa . '</h2>
             <form action="Camarero.php" method="POST">
                 <input type="hidden" name="mesa" value="' . $numeroMesa . '">

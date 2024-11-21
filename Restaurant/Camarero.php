@@ -4,123 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pedidos de la Mesa</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f9f9f9;
-            color: #333;
-            margin: 0;
-            padding: 20px;
-        }
-
-        h1 {
-            color: #444;
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        h1 u {
-            text-decoration-color: #0078d7;
-        }
-
-        p {
-            font-size: 1.1em;
-        }
-
-        .pedido {
-            border: 1px solid #ccc;
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 20px;
-            background-color: #fff;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
-        .pedido img {
-            display: block;
-            margin: 10px auto;
-            border-radius: 8px;
-        }
-
-        .pedido strong {
-            color: #0078d7;
-        }
-
-        .comensales {
-            font-weight: bold;
-            font-size: 1.2em;
-            color: #333;
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        .boton {
-            text-align: center;
-            margin-top: 20px;
-        }
-
-        .boton a {
-            text-decoration: none;
-            background-color: #0078d7;
-            color: #fff;
-            padding: 10px 20px;
-            border-radius: 8px;
-            transition: background-color 0.3s ease;
-        }
-
-        .boton a:hover {
-            background-color: #0053a4;
-        }
-
-        .volver {
-            margin-top: 30px;
-            text-align: center;
-        }
-
-        .volver a {
-            text-decoration: none;
-            color: #0078d7;
-            font-size: 1.1em;
-        }
-
-        .volver a:hover {
-            text-decoration: underline;
-        }
-
-        .form-container {
-            margin: 20px auto;
-            padding: 20px;
-            width: 300px;
-            background-color: #fff;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-
-        input[type="number"] {
-            width: 100%;
-            padding: 8px;
-            font-size: 1.2em;
-            margin-bottom: 20px;
-            border-radius: 5px;
-            border: 1px solid #ccc;
-        }
-
-        input[type="submit"] {
-            background-color: #0078d7;
-            color: white;
-            padding: 10px;
-            width: 100%;
-            font-size: 1.2em;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-
-        input[type="submit"]:hover {
-            background-color: #0053a4;
-        }
-
-    </style>
 </head>
 <body>
 
@@ -135,10 +18,9 @@
 include("conexion.php");
 
 if (isset($_POST['mesa'])) {
-    // Recuperar el número de mesa desde el formulario (POST)
-    $numeroMesa = intval($_POST['mesa']);  // Convertir a número entero para evitar inyecciones SQL
+    $numeroMesa = intval($_POST['mesa']);  // Número de mesa recibido por POST
 
-    // Consulta para obtener los pedidos y el número de comensales de la mesa seleccionada
+    // Consulta para obtener pedidos pendientes de la mesa seleccionada
     $consulta = "
         SELECT 
             p.ID_Pedido, 
@@ -147,7 +29,9 @@ if (isset($_POST['mesa'])) {
             p.Fecha, 
             lp.Cantidad, 
             lp.precio, 
-            pr.Comida
+            lp.nota, 
+            pr.Comida,
+            p.Estado
         FROM 
             pedidos p
         INNER JOIN 
@@ -155,17 +39,15 @@ if (isset($_POST['mesa'])) {
         INNER JOIN 
             productos pr ON lp.ID_comida = pr.ID_comida
         WHERE 
-            p.Numeromesa = $numeroMesa";
+            p.Numeromesa = $numeroMesa AND p.Estado = 'pendiente'"; // Filtrar por estado pendiente
 
-    // Ejecutar la consulta
     $result = mysqli_query($conn, $consulta);
 
-    // Verificar si hubo errores en la consulta
     if (!$result) {
         die("Error en la consulta SQL: " . mysqli_error($conn));
     }
 
-    // Consulta para obtener el número de comensales de la mesa
+    // Consulta para obtener el número de comensales
     $consultaMesas = "SELECT Numero_comensales FROM mesas WHERE Numero_mesa = $numeroMesa";
     $resultMesas = mysqli_query($conn, $consultaMesas);
     $numeroComensales = 0;
@@ -185,15 +67,11 @@ if (isset($_POST['mesa'])) {
     echo '</form>';
     echo '</div>';
 
-    // Si se envió el formulario para actualizar el número de comensales
     if (isset($_POST['comensales'])) {
         $nuevoNumeroComensales = intval($_POST['comensales']);
-        
-        // Actualizar el número de comensales en la base de datos
         $updateQuery = "UPDATE mesas SET Numero_comensales = $nuevoNumeroComensales WHERE Numero_mesa = $numeroMesa";
         if (mysqli_query($conn, $updateQuery)) {
             echo "<p><strong>El número de comensales se ha actualizado a " . htmlspecialchars($nuevoNumeroComensales) . ".</strong></p>";
-            // Redirigir a la página de mesas.php después de actualizar
             header("Location: mesas.php");
             exit();
         } else {
@@ -201,11 +79,10 @@ if (isset($_POST['mesa'])) {
         }
     }
 
-    // Verificar si hay resultados en la tabla de pedidos
+    // Mostrar pedidos pendientes
     if (mysqli_num_rows($result) > 0) {
         echo "<p><strong>Número de comensales: " . htmlspecialchars($numeroComensales) . "</strong></p>";
 
-        // Mostrar los pedidos
         while ($row = mysqli_fetch_assoc($result)) {
             echo "<div class='pedido'>";
             echo "<strong>ID Pedido: </strong>" . htmlspecialchars($row['ID_Pedido']) . "<br>";
@@ -214,17 +91,92 @@ if (isset($_POST['mesa'])) {
             echo "<strong>Cantidad: </strong>" . htmlspecialchars($row['Cantidad']) . "<br>";
             echo "<strong>Camarero: </strong>" . htmlspecialchars($row['ID_usuario']) . "<br>";
             echo "<strong>Número Mesa: </strong>" . htmlspecialchars($row['Numeromesa']) . "<br>";
+            if (!empty($row['nota'])) {
+                echo "<strong>Nota: </strong>" . htmlspecialchars($row['nota']) . "<br>";
+            }
             echo "<br>";
             echo "</div>";
         }
+
+        // Formulario para generar el PDF de la cuenta
+        echo '<form method="POST">';
+        echo '<input type="hidden" name="mesa" value="' . $numeroMesa . '">';
+        echo '<input type="submit" name="generar_pdf" value="Generar PDF de la Cuenta" style="background-color: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer;">';
+        echo '</form>';
+
+        // Botón para marcar la mesa como pagada
+        echo '<form method="POST" action="">';
+        echo '<input type="hidden" name="mesa" value="' . $numeroMesa . '">';
+        echo '<input type="hidden" name="marcar_pagada" value="1">';
+        echo '<input type="submit" value="Marcar Mesa como Pagada" style="background-color: #28a745; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer;">';
+        echo '</form>';
+
+        // Enlace para ingresar nuevos pedidos
+        echo '<p><a href="IngresaPedido.php?mesa=' . $numeroMesa . '">Agregar un nuevo pedido a esta mesa</a></p>';
     } else {
-        echo "<p>No hay pedidos para esta mesa.</p>";
+        echo "<p>No hay pedidos pendientes para esta mesa.</p>";
     }
 
-    // Botón para agregar un nuevo pedido a esta mesa
-    echo '<p><a href="IngresaPedido.php?mesa=' . $numeroMesa . '">Agregar un nuevo pedido a esta mesa</a></p>';
+    // Si se envió el formulario para generar el PDF de la cuenta
+    if (isset($_POST['generar_pdf'])) {
+        // Consulta para obtener los detalles de la cuenta
+        $consultaCuenta = "
+            SELECT 
+                p.ID_Pedido, 
+                lp.Cantidad, 
+                lp.precio, 
+                pr.Comida
+            FROM 
+                pedidos p
+            INNER JOIN 
+                lineas_pedido lp ON p.ID_Pedido = lp.ID_Pedido
+            INNER JOIN 
+                productos pr ON lp.ID_comida = pr.ID_comida
+            WHERE 
+                p.Numeromesa = $numeroMesa AND p.Estado = 'pagado'"; // Aseguramos que solo se incluyan los pedidos pagados
 
-    // Cerrar la conexión con la base de datos
+        $resultCuenta = mysqli_query($conn, $consultaCuenta);
+        
+        require_once __DIR__ . '/vendor/autoload.php'; // Incluir el autoloader de Composer
+        $mpdf = new \Mpdf\Mpdf();
+        $html = "<h1>Cuenta de la Mesa $numeroMesa</h1><table><thead><tr><th>Comida</th><th>Cantidad</th><th>Precio</th><th>Total</th></tr></thead><tbody>";
+        $totalCuenta = 0;
+
+        while ($row = mysqli_fetch_assoc($resultCuenta)) {
+            $totalLinea = $row['Cantidad'] * $row['precio'];
+            $totalCuenta += $totalLinea;
+            $html .= "<tr>
+                <td>" . htmlspecialchars($row['Comida']) . "</td>
+                <td>" . htmlspecialchars($row['Cantidad']) . "</td>
+                <td>" . number_format($row['precio'], 2) . " €</td>
+                <td>" . number_format($totalLinea, 2) . " €</td>
+            </tr>";
+        }
+
+        $html .= "</tbody></table>";
+        $html .= "<h3>Total: " . number_format($totalCuenta, 2) . " €</h3>";
+
+        // Generar el PDF
+        $mpdf->WriteHTML($html);
+        $mpdf->Output(); // Mostrar el PDF en el navegador
+    }
+
+    // Si se envió el formulario para marcar la mesa como pagada
+    if (isset($_POST['marcar_pagada']) && intval($_POST['marcar_pagada']) === 1) {
+        // Actualizar el estado de los pedidos a 'pagado'
+        $updatePedidos = "UPDATE pedidos SET Estado = 'pagado' WHERE Numeromesa = $numeroMesa AND Estado = 'pendiente'";
+        // Resetear el número de comensales a 0
+        $resetComensales = "UPDATE mesas SET Numero_comensales = 0 WHERE Numero_mesa = $numeroMesa";
+
+        if (mysqli_query($conn, $updatePedidos) && mysqli_query($conn, $resetComensales)) {
+            echo "<p><strong>La mesa ha sido marcada como pagada. Los pedidos ya no se mostrarán y el número de comensales ha sido reiniciado.</strong></p>";
+            header("Location: mesas.php");
+            exit();
+        } else {
+            echo "<p>Error al marcar la mesa como pagada.</p>";
+        }
+    }
+
     mysqli_close($conn);
 } else {
     echo "<p>No se ha seleccionado ninguna mesa.</p>";
@@ -232,6 +184,7 @@ if (isset($_POST['mesa'])) {
 ?>
 
 <p><a href="mesas.php">Volver a las mesas</a></p>
+<p><a href="IngresaPedido.php?mesa=<?php echo $numeroMesa; ?>">Agregar un nuevo pedido a esta mesa</a></p>
 
 </body>
 </html>

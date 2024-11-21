@@ -39,6 +39,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ID_comida'], $_POST['
         'cantidad' => $_POST['cantidad'],
         'precio' => $_POST['precio'],
         'nombre' => $_POST['nombre'], // Para mostrar en el listado
+        'nota' => isset($_POST['nota']) ? $_POST['nota'] : '', // Capturamos la nota si existe
     ];
     $_SESSION['lineas_pedido'][] = $linea;
 }
@@ -49,9 +50,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirmar_pedido'])) 
     $lineas_pedido = $_SESSION['lineas_pedido'];
 
     if (!empty($lineas_pedido)) {
-        // Crear el pedido en la tabla `pedidos` (sin ID_comida)
-        $sql_pedido = "INSERT INTO pedidos (Numeromesa, ID_usuario, fecha) 
-                       VALUES ('$numeroMesa', '$ID_usuario', NOW())";
+        // Crear el pedido en la tabla `pedidos` (sin ID_comida), ahora con el estado 'pendiente'
+        $sql_pedido = "INSERT INTO pedidos (Numeromesa, ID_usuario, fecha, Estado) 
+                       VALUES ('$numeroMesa', '$ID_usuario', NOW(), 'pendiente')";
         if (mysqli_query($conn, $sql_pedido)) {
             $ID_pedido = mysqli_insert_id($conn); // Obtener el ID del pedido recién creado
 
@@ -60,8 +61,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirmar_pedido'])) 
                 // Validar que el producto existe antes de insertar
                 $check_producto = mysqli_query($conn, "SELECT 1 FROM productos WHERE ID_comida = '{$linea['ID_comida']}'");
                 if (mysqli_num_rows($check_producto) > 0) {
-                    $sql_linea = "INSERT INTO lineas_pedido (ID_pedido, ID_comida, cantidad, precio) 
-                                  VALUES ('$ID_pedido', '{$linea['ID_comida']}', '{$linea['cantidad']}', '{$linea['precio']}')";
+                    $sql_linea = "INSERT INTO lineas_pedido (ID_pedido, ID_comida, cantidad, precio, nota) 
+                                  VALUES ('$ID_pedido', '{$linea['ID_comida']}', '{$linea['cantidad']}', '{$linea['precio']}', '{$linea['nota']}')";
                     if (!mysqli_query($conn, $sql_linea)) {
                         echo "<p>Error al guardar la línea de pedido: " . mysqli_error($conn) . "</p>";
                         exit;
@@ -134,7 +135,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirmar_pedido'])) 
         input[type="number"],
         input[type="file"],
         input[type="submit"],
-        select {
+        select,
+        textarea {
             padding: 10px;
             border: 1px solid #ccc;
             border-radius: 5px;
@@ -225,6 +227,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirmar_pedido'])) 
             <label for="cantidad">Cantidad:</label>
             <input type="number" id="cantidad" name="cantidad" required>
 
+            <!-- Notas -->
+            <label for="nota">Notas:</label>
+            <input type="text" id="nota" name="nota" placeholder="Ejemplo: Cocacola con hielo">
+
             <!-- Precio y Nombre (ocultos, se envían automáticamente) -->
             <input type="hidden" id="precio" name="precio">
             <input type="hidden" id="nombre" name="nombre">
@@ -238,7 +244,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirmar_pedido'])) 
     <?php if (!empty($_SESSION['lineas_pedido'])): ?>
         <ul>
             <?php foreach ($_SESSION['lineas_pedido'] as $linea): ?>
-                <li><?= $linea['cantidad'] ?>x <?= htmlspecialchars($linea['nombre']) ?> - $<?= $linea['precio'] ?></li>
+                <li><?= $linea['cantidad'] ?>x <?= htmlspecialchars($linea['nombre']) ?> - $<?= $linea['precio'] ?>
+                    <?php if (!empty($linea['nota'])): ?>
+                        <br><small><strong>Nota:</strong> <?= htmlspecialchars($linea['nota']) ?></small>
+                    <?php endif; ?>
+                </li>
             <?php endforeach; ?>
         </ul>
         <form method="POST">
