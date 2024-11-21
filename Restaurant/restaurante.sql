@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 20-11-2024 a las 20:31:46
+-- Tiempo de generación: 21-11-2024 a las 23:43:09
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.0.30
 
@@ -34,8 +34,26 @@ CREATE TABLE `lineas_pedido` (
   `ID_pedido` int(100) DEFAULT NULL,
   `ID_comida` int(100) DEFAULT NULL,
   `cantidad` int(11) DEFAULT NULL,
-  `precio` decimal(10,2) DEFAULT NULL
+  `precio` decimal(10,2) DEFAULT NULL,
+  `nota` varchar(250) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+
+--
+-- Volcado de datos para la tabla `lineas_pedido`
+--
+
+INSERT INTO `lineas_pedido` (`ID_linea`, `ID_pedido`, `ID_comida`, `cantidad`, `precio`, `nota`) VALUES
+(1, 31, 1, 1, 15.00, ''),
+(2, 32, 3, 2, 8.00, ''),
+(3, 32, 4, 3, 8.00, ''),
+(4, 32, 5, 1, 6.00, ''),
+(5, 33, 1, 2, 15.00, 'Con hielo'),
+(6, 33, 3, 1, 8.00, 'Con salsa'),
+(7, 33, 5, 1, 6.00, 'Extra canela'),
+(8, 34, 1, 2, 15.00, 'Con hielo'),
+(9, 34, 3, 1, 8.00, 'Con salsa'),
+(10, 34, 4, 5, 8.00, 'Con aji'),
+(11, 35, 1, 2, 15.00, 'Con hielo');
 
 -- --------------------------------------------------------
 
@@ -45,7 +63,7 @@ CREATE TABLE `lineas_pedido` (
 
 CREATE TABLE `mesas` (
   `Numero_mesa` int(11) NOT NULL,
-  `Estado` set('Libre','Ocupada','','') NOT NULL,
+  `Estado` set('Libre','Ocupada','Pagada','') NOT NULL,
   `Numero_comensales` int(11) NOT NULL,
   `ID_usuario` int(100) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
@@ -55,9 +73,9 @@ CREATE TABLE `mesas` (
 --
 
 INSERT INTO `mesas` (`Numero_mesa`, `Estado`, `Numero_comensales`, `ID_usuario`) VALUES
-(1, 'Libre', 8, 2),
-(2, 'Libre', 2, 4),
-(3, 'Libre', 5, 3);
+(1, 'Ocupada', 0, 2),
+(2, 'Libre', 0, 4),
+(3, 'Libre', 0, 3);
 
 -- --------------------------------------------------------
 
@@ -67,14 +85,23 @@ INSERT INTO `mesas` (`Numero_mesa`, `Estado`, `Numero_comensales`, `ID_usuario`)
 
 CREATE TABLE `pedidos` (
   `ID_Pedido` int(100) NOT NULL,
-  `Comida` varchar(50) NOT NULL,
-  `Precio` int(100) NOT NULL,
-  `Cantidad` int(100) NOT NULL,
   `ID_usuario` int(100) NOT NULL,
   `Numeromesa` int(11) NOT NULL,
-  `Notas` varchar(100) NOT NULL,
-  `Fecha` date NOT NULL
+  `Fecha` date NOT NULL,
+  `fecha_hora` datetime NOT NULL DEFAULT current_timestamp(),
+  `Estado` set('pendiente','pagado','','') NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_spanish_ci;
+
+--
+-- Volcado de datos para la tabla `pedidos`
+--
+
+INSERT INTO `pedidos` (`ID_Pedido`, `ID_usuario`, `Numeromesa`, `Fecha`, `fecha_hora`, `Estado`) VALUES
+(31, 2, 1, '2024-11-20', '2024-11-20 21:42:02', 'pagado'),
+(32, 2, 1, '2024-11-20', '2024-11-20 21:57:24', 'pagado'),
+(33, 2, 1, '2024-11-21', '2024-11-21 22:13:36', 'pagado'),
+(34, 2, 1, '2024-11-21', '2024-11-21 22:41:09', ''),
+(35, 2, 1, '2024-11-21', '2024-11-21 22:44:29', 'pagado');
 
 -- --------------------------------------------------------
 
@@ -83,29 +110,23 @@ CREATE TABLE `pedidos` (
 --
 
 CREATE TABLE `productos` (
-  `ID_comida` int(100) NOT NULL,
-  `Comida` varchar(280) NOT NULL,
-  `Tipo` set('Bebida','Entrante','Plato fuerte','Postre') NOT NULL,
-  `Imagen` varchar(255) NOT NULL,
-  `Cantidad` int(100) NOT NULL,
-  `Precio` int(100) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_spanish_ci;
+  `ID_comida` int(11) NOT NULL,
+  `comida` varchar(50) NOT NULL,
+  `tipo` set('Bebida','Entrante','Plato Fuerte','Postre') NOT NULL,
+  `precio` decimal(10,2) NOT NULL,
+  `imagen` varchar(255) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 
 --
 -- Volcado de datos para la tabla `productos`
 --
 
-INSERT INTO `productos` (`ID_comida`, `Comida`, `Tipo`, `Imagen`, `Cantidad`, `Precio`) VALUES
-(1, 'Pollo', 'Plato fuerte', 'Imagenes/pollito.jpg', 100, 10),
-(2, 'Arepa Con todo', 'Plato fuerte', 'Imagenes/arepaContodo.png', 100, 15),
-(3, 'Arroz con pollo Colombiano', 'Plato fuerte', 'Imagenes/arrozcompollo.jpg', 50, 25),
-(4, 'Chuleta valluna', 'Plato fuerte', 'Imagenes/chuleta.jpg', 10, 15),
-(5, 'Empanada', 'Entrante', 'Imagenes/Empanada.jpeg', 200, 5),
-(6, 'Cocacola', 'Bebida', 'Imagenes/Cocacola.jpg', 500, 2),
-(7, 'Pepsi', 'Bebida', 'Imagenes/Pepsi.png', 500, 3),
-(8, 'Redbull', 'Bebida', 'Imagenes/Pepsi.png', 500, 3),
-(9, 'Marranita', 'Entrante', 'Imagenes/Marranita.jpg', 30, 7),
-(10, 'Pastel de yuca', 'Entrante', 'Imagenes/Pastel_yuca.jpg', 50, 7);
+INSERT INTO `productos` (`ID_comida`, `comida`, `tipo`, `precio`, `imagen`) VALUES
+(1, 'Cocacola', 'Bebida', 15.00, 'Imagenes/Cocacola.jpg'),
+(2, 'Redbull', 'Bebida', 5.00, 'Imagenes/Redbull.jpg'),
+(3, 'ArrozConPollo', 'Plato Fuerte', 8.00, 'Imagenes/arrozcompollo.jpg'),
+(4, 'Empanadas', 'Entrante', 8.00, 'Imagenes/Empanada.jpeg'),
+(5, 'Arroz de leche', 'Postre', 6.00, 'Imagenes/Arroz de leche.jpg');
 
 -- --------------------------------------------------------
 
@@ -161,7 +182,7 @@ INSERT INTO `usuarios` (`ID_usuario`, `Nombre`, `Usuario`, `Contrasena`, `ID_rol
 ALTER TABLE `lineas_pedido`
   ADD PRIMARY KEY (`ID_linea`),
   ADD KEY `ID_pedido` (`ID_pedido`),
-  ADD KEY `ID_comida` (`ID_comida`);
+  ADD KEY `fk_lineas_pedido_productos` (`ID_comida`);
 
 --
 -- Indices de la tabla `mesas`
@@ -176,15 +197,13 @@ ALTER TABLE `mesas`
 ALTER TABLE `pedidos`
   ADD PRIMARY KEY (`ID_Pedido`),
   ADD KEY `ID_usuario` (`ID_usuario`),
-  ADD KEY `Numeromesa` (`Numeromesa`),
-  ADD KEY `Precio` (`Precio`);
+  ADD KEY `Numeromesa` (`Numeromesa`);
 
 --
 -- Indices de la tabla `productos`
 --
 ALTER TABLE `productos`
-  ADD PRIMARY KEY (`ID_comida`,`Precio`),
-  ADD KEY `Precio` (`Precio`);
+  ADD PRIMARY KEY (`ID_comida`);
 
 --
 -- Indices de la tabla `roles`
@@ -207,7 +226,7 @@ ALTER TABLE `usuarios`
 -- AUTO_INCREMENT de la tabla `lineas_pedido`
 --
 ALTER TABLE `lineas_pedido`
-  MODIFY `ID_linea` int(100) NOT NULL AUTO_INCREMENT;
+  MODIFY `ID_linea` int(100) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
 -- AUTO_INCREMENT de la tabla `mesas`
@@ -219,13 +238,13 @@ ALTER TABLE `mesas`
 -- AUTO_INCREMENT de la tabla `pedidos`
 --
 ALTER TABLE `pedidos`
-  MODIFY `ID_Pedido` int(100) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
+  MODIFY `ID_Pedido` int(100) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=36;
 
 --
 -- AUTO_INCREMENT de la tabla `productos`
 --
 ALTER TABLE `productos`
-  MODIFY `ID_comida` int(100) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+  MODIFY `ID_comida` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT de la tabla `roles`
@@ -247,8 +266,8 @@ ALTER TABLE `usuarios`
 -- Filtros para la tabla `lineas_pedido`
 --
 ALTER TABLE `lineas_pedido`
-  ADD CONSTRAINT `lineas_pedido_ibfk_1` FOREIGN KEY (`ID_pedido`) REFERENCES `pedidos` (`ID_Pedido`),
-  ADD CONSTRAINT `lineas_pedido_ibfk_2` FOREIGN KEY (`ID_comida`) REFERENCES `productos` (`ID_comida`);
+  ADD CONSTRAINT `fk_lineas_pedido_productos` FOREIGN KEY (`ID_comida`) REFERENCES `productos` (`ID_comida`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `lineas_pedido_ibfk_1` FOREIGN KEY (`ID_pedido`) REFERENCES `pedidos` (`ID_Pedido`);
 
 --
 -- Filtros para la tabla `mesas`
@@ -261,8 +280,7 @@ ALTER TABLE `mesas`
 --
 ALTER TABLE `pedidos`
   ADD CONSTRAINT `pedidos_ibfk_1` FOREIGN KEY (`ID_usuario`) REFERENCES `usuarios` (`ID_usuario`) ON DELETE CASCADE ON UPDATE CASCADE,
-  ADD CONSTRAINT `pedidos_ibfk_2` FOREIGN KEY (`Numeromesa`) REFERENCES `mesas` (`Numero_mesa`) ON DELETE CASCADE ON UPDATE CASCADE,
-  ADD CONSTRAINT `pedidos_ibfk_4` FOREIGN KEY (`Precio`) REFERENCES `productos` (`Precio`) ON DELETE CASCADE ON UPDATE CASCADE;
+  ADD CONSTRAINT `pedidos_ibfk_2` FOREIGN KEY (`Numeromesa`) REFERENCES `mesas` (`Numero_mesa`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
 -- Filtros para la tabla `usuarios`
