@@ -99,8 +99,8 @@ if (isset($_POST['mesa'])) {
         }
 
         // Formulario para generar el PDF de la cuenta
-        echo '<form method="POST">';
-        echo '<input type="hidden" name="mesa" value="' . $numeroMesa . '">';
+        echo '<form action="./pruebaaaa.php" method="POST" target="_blank">';
+        echo '<input type="hidden" name="mesa" value="' . $numeroMesa . '">'; 
         echo '<input type="submit" name="generar_pdf" value="Generar PDF de la Cuenta" style="background-color: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer;">';
         echo '</form>';
 
@@ -120,45 +120,6 @@ if (isset($_POST['mesa'])) {
     // Si se envió el formulario para generar el PDF de la cuenta
     if (isset($_POST['generar_pdf'])) {
         // Consulta para obtener los detalles de la cuenta
-        $consultaCuenta = "
-            SELECT 
-                p.ID_Pedido, 
-                lp.Cantidad, 
-                lp.precio, 
-                pr.Comida
-            FROM 
-                pedidos p
-            INNER JOIN 
-                lineas_pedido lp ON p.ID_Pedido = lp.ID_Pedido
-            INNER JOIN 
-                productos pr ON lp.ID_comida = pr.ID_comida
-            WHERE 
-                p.Numeromesa = $numeroMesa AND p.Estado = 'pagado'"; // Aseguramos que solo se incluyan los pedidos pagados
-
-        $resultCuenta = mysqli_query($conn, $consultaCuenta);
-        
-        require_once __DIR__ . '/vendor/autoload.php'; // Incluir el autoloader de Composer
-        $mpdf = new \Mpdf\Mpdf();
-        $html = "<h1>Cuenta de la Mesa $numeroMesa</h1><table><thead><tr><th>Comida</th><th>Cantidad</th><th>Precio</th><th>Total</th></tr></thead><tbody>";
-        $totalCuenta = 0;
-
-        while ($row = mysqli_fetch_assoc($resultCuenta)) {
-            $totalLinea = $row['Cantidad'] * $row['precio'];
-            $totalCuenta += $totalLinea;
-            $html .= "<tr>
-                <td>" . htmlspecialchars($row['Comida']) . "</td>
-                <td>" . htmlspecialchars($row['Cantidad']) . "</td>
-                <td>" . number_format($row['precio'], 2) . " €</td>
-                <td>" . number_format($totalLinea, 2) . " €</td>
-            </tr>";
-        }
-
-        $html .= "</tbody></table>";
-        $html .= "<h3>Total: " . number_format($totalCuenta, 2) . " €</h3>";
-
-        // Generar el PDF
-        $mpdf->WriteHTML($html);
-        $mpdf->Output(); // Mostrar el PDF en el navegador
     }
 
     // Si se envió el formulario para marcar la mesa como pagada
