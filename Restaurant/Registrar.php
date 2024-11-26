@@ -79,7 +79,7 @@
 </head>
 <body>
     <section>
-        <form action="Registro.php" method="POST">
+        <form action="Registro.php" method="POST" enctype="multipart/form-data">
             <h2>Registro</h2>
             <input type="text" placeholder="Nombre" id="nombre" name="nombre">
             <input type="text" placeholder="Usuario" id="usuario" name="usuario"> 
@@ -88,8 +88,8 @@
                 <option value="1">Encargado</option>
                 <option value="2">Camarero</option>
             </select>
-            <input type="text" name="DNI" placeholder="DNI">
-            <input type="file" name="Foto">
+            <input type="text" name="DNI" placeholder="DNI" id="DNI">
+            <input type="file" name="Foto" id="Foto">
             <input type="submit" value="Registrar">
         </form>
         <p><a href="Encargado.php">Volver al Menú</a></p>  

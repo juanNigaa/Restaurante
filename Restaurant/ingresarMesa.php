@@ -7,7 +7,7 @@ $ID_usuario = $_POST['ID_encargado'];
 
 
 if (!empty($NumeroMesa) && !empty($ID_usuario)) {
-   a
+   
     $consulta = "INSERT INTO mesas (Numero_mesa, Estado, Numero_comensales, ID_usuario) 
                  VALUES ('$NumeroMesa', 'Libre', 4, '$ID_usuario')";
 

@@ -18,7 +18,7 @@ include("conexion.php");
         INNER JOIN 
             productos pr ON lp.ID_comida = pr.ID_comida
         WHERE 
-            p.Numeromesa = $numeroMesa AND p.Estado = 'pagado'"; // Aseguramos que solo se incluyan los pedidos pagados
+            p.Numeromesa = $numeroMesa AND p.Estado = 'pendiente'"; // Aseguramos que solo se incluyan los pedidos pendientes
 
         $resultCuenta = mysqli_query($conn, $consultaCuenta);
         require('./vendor/autoload.php'); // Incluir el autoloader de Composer
