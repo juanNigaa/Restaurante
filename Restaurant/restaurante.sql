@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 21-11-2024 a las 23:43:09
+-- Tiempo de generación: 26-11-2024 a las 14:33:27
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.0.30
 
@@ -53,7 +53,29 @@ INSERT INTO `lineas_pedido` (`ID_linea`, `ID_pedido`, `ID_comida`, `cantidad`, `
 (8, 34, 1, 2, 15.00, 'Con hielo'),
 (9, 34, 3, 1, 8.00, 'Con salsa'),
 (10, 34, 4, 5, 8.00, 'Con aji'),
-(11, 35, 1, 2, 15.00, 'Con hielo');
+(11, 35, 1, 2, 15.00, 'Con hielo'),
+(12, 36, 2, 1, 5.00, 'Con hielo'),
+(13, 36, 3, 1, 8.00, 'Con ketchup'),
+(14, 37, 1, 1, 15.00, 'hielo'),
+(15, 37, 3, 2, 8.00, 'salsa'),
+(16, 38, 1, 1, 15.00, 'con hielo'),
+(17, 39, 3, 2, 8.00, 'Con salsa de tomate '),
+(18, 39, 5, 1, 6.00, ''),
+(19, 39, 1, 2, 15.00, 'Con hielo'),
+(20, 40, 5, 1, 6.00, ''),
+(21, 41, 7, 1, 3.50, 'Con hielo'),
+(22, 41, 3, 1, 8.00, 'Con salsa'),
+(23, 41, 4, 4, 8.00, 'Con aji'),
+(24, 41, 8, 2, 6.50, 'Con lechera'),
+(25, 42, 2, 1, 5.00, ''),
+(26, 42, 3, 1, 8.00, 'salsa'),
+(27, 42, 4, 1, 8.00, 'aji'),
+(28, 42, 11, 2, 3.00, 'aji rojo'),
+(29, 43, 7, 1, 3.50, 'con hielo'),
+(30, 43, 3, 1, 8.00, 'salsa'),
+(31, 43, 12, 2, 8.00, ''),
+(32, 44, 5, 1, 6.00, 'con lechera'),
+(33, 45, 12, 4, 8.00, '');
 
 -- --------------------------------------------------------
 
@@ -73,9 +95,10 @@ CREATE TABLE `mesas` (
 --
 
 INSERT INTO `mesas` (`Numero_mesa`, `Estado`, `Numero_comensales`, `ID_usuario`) VALUES
-(1, 'Ocupada', 0, 2),
-(2, 'Libre', 0, 4),
-(3, 'Libre', 0, 3);
+(1, 'Ocupada', 5, 2),
+(2, 'Ocupada', 2, 4),
+(3, 'Ocupada', 0, 3),
+(4, 'Ocupada', 4, 1);
 
 -- --------------------------------------------------------
 
@@ -101,7 +124,17 @@ INSERT INTO `pedidos` (`ID_Pedido`, `ID_usuario`, `Numeromesa`, `Fecha`, `fecha_
 (32, 2, 1, '2024-11-20', '2024-11-20 21:57:24', 'pagado'),
 (33, 2, 1, '2024-11-21', '2024-11-21 22:13:36', 'pagado'),
 (34, 2, 1, '2024-11-21', '2024-11-21 22:41:09', ''),
-(35, 2, 1, '2024-11-21', '2024-11-21 22:44:29', 'pagado');
+(35, 2, 1, '2024-11-21', '2024-11-21 22:44:29', 'pagado'),
+(36, 2, 1, '2024-11-22', '2024-11-22 10:51:49', 'pagado'),
+(37, 2, 1, '2024-11-22', '2024-11-22 11:26:50', 'pagado'),
+(38, 2, 1, '2024-11-22', '2024-11-22 11:28:51', 'pagado'),
+(39, 2, 1, '2024-11-25', '2024-11-25 09:16:25', 'pendiente'),
+(40, 2, 1, '2024-11-25', '2024-11-25 09:21:09', 'pendiente'),
+(41, 2, 2, '2024-11-25', '2024-11-25 11:47:53', 'pendiente'),
+(42, 2, 1, '2024-11-26', '2024-11-26 09:24:45', 'pendiente'),
+(43, 2, 3, '2024-11-26', '2024-11-26 10:15:27', 'pagado'),
+(44, 2, 3, '2024-11-26', '2024-11-26 10:15:57', 'pagado'),
+(45, 2, 3, '2024-11-26', '2024-11-26 10:16:48', 'pagado');
 
 -- --------------------------------------------------------
 
@@ -126,7 +159,22 @@ INSERT INTO `productos` (`ID_comida`, `comida`, `tipo`, `precio`, `imagen`) VALU
 (2, 'Redbull', 'Bebida', 5.00, 'Imagenes/Redbull.jpg'),
 (3, 'ArrozConPollo', 'Plato Fuerte', 8.00, 'Imagenes/arrozcompollo.jpg'),
 (4, 'Empanadas', 'Entrante', 8.00, 'Imagenes/Empanada.jpeg'),
-(5, 'Arroz de leche', 'Postre', 6.00, 'Imagenes/Arroz de leche.jpg');
+(5, 'Arroz de leche', 'Postre', 6.00, 'Imagenes/Arroz de leche.jpg'),
+(7, 'Jugo_Maracuya', 'Bebida', 3.50, 'Imagenes/Jugo_Maracuya.jpg'),
+(8, 'postredeMilo', 'Postre', 6.50, 'Imagenes/PostredeMilo.jpg'),
+(9, 'Envuelto', 'Postre', 5.00, 'Imagenes/Envuelto.png'),
+(10, 'Papa rellena', 'Entrante', 4.50, 'Imagenes/Papa_rellena.jpg'),
+(11, 'Pastel de yuca', 'Entrante', 3.00, 'Imagenes/Pastel_yuca.jpg'),
+(12, 'arepa con todo', 'Plato Fuerte', 8.00, 'Imagenes/arepaContodo.png'),
+(13, 'Lechona', 'Plato Fuerte', 12.00, 'Imagenes/lechona.jpg'),
+(14, 'MielmeSabe', 'Postre', 12.00, 'Imagenes/Mielmesabe.jpg'),
+(15, 'Salchipapa', 'Plato Fuerte', 18.00, 'Imagenes/salchipapa.jfif'),
+(16, 'Tortilla', 'Entrante', 5.00, 'Imagenes/Tortilla.jpg'),
+(17, 'Frijolada', 'Plato Fuerte', 12.00, 'Imagenes/frijolada.jpg'),
+(18, 'Sancocho', 'Plato Fuerte', 6.00, 'Imagenes/sancocho.jpg'),
+(19, 'Bandeja paisa', 'Plato Fuerte', 9.00, '1366_2000.jpg'),
+(20, 'Chuleta ', 'Plato Fuerte', 11.00, 'Imagenes/chuleta.jpg'),
+(21, 'Ajiaco', '', 5.00, 'Imagenes/Ajiaco.jpeg');
 
 -- --------------------------------------------------------
 
@@ -159,18 +207,21 @@ CREATE TABLE `usuarios` (
   `Usuario` varchar(20) NOT NULL,
   `Contrasena` varchar(12) NOT NULL,
   `ID_rol` int(100) NOT NULL,
-  `Foto_DNI` varchar(255) NOT NULL
+  `Foto_DNI` varchar(255) NOT NULL,
+  `DNI` varchar(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_spanish_ci;
 
 --
 -- Volcado de datos para la tabla `usuarios`
 --
 
-INSERT INTO `usuarios` (`ID_usuario`, `Nombre`, `Usuario`, `Contrasena`, `ID_rol`, `Foto_DNI`) VALUES
-(1, 'Juan andres', 'JuanM', 'narutosxd@', 1, 'Imagenes/NIE_encargado.jpg'),
-(2, 'Daniel matias', 'Dani23', 'DAW23', 2, 'Imagenes/Dni1.png'),
-(3, 'Diego armando', 'Eldiego', 'DAW1234', 2, 'Imagenes/Dni2.png'),
-(4, 'Benito camelas', 'BenitoxD', '12345', 2, 'Imagenes/DNI_camarero.jpg');
+INSERT INTO `usuarios` (`ID_usuario`, `Nombre`, `Usuario`, `Contrasena`, `ID_rol`, `Foto_DNI`, `DNI`) VALUES
+(1, 'Juan andres', 'JuanM', 'narutosxd@', 1, 'Imagenes/NIE_encargado.jpg', 'z0185325x'),
+(2, 'Daniel matias', 'Dani23', 'DAW23', 2, 'Imagenes/Dni1.png', '20136564R'),
+(3, 'Diego armando', 'Eldiego', 'DAW1234', 2, 'Imagenes/Dni2.png', '123456789z'),
+(4, 'Benito camelas', 'BenitoxD', '12345', 2, 'Imagenes/DNI_camarero.jpg', '54265642A'),
+(5, 'Victor', 'Victorino', '1234567', 1, 'Imagenes/198780_1.jpg', 'A14255125'),
+(6, 'Roony', 'ColemanRony', '123456', 2, 'Imagenes/67443f5be0dd1_USUARIo.png', '12356789A');
 
 --
 -- Índices para tablas volcadas
@@ -226,25 +277,25 @@ ALTER TABLE `usuarios`
 -- AUTO_INCREMENT de la tabla `lineas_pedido`
 --
 ALTER TABLE `lineas_pedido`
-  MODIFY `ID_linea` int(100) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+  MODIFY `ID_linea` int(100) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=34;
 
 --
 -- AUTO_INCREMENT de la tabla `mesas`
 --
 ALTER TABLE `mesas`
-  MODIFY `Numero_mesa` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `Numero_mesa` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT de la tabla `pedidos`
 --
 ALTER TABLE `pedidos`
-  MODIFY `ID_Pedido` int(100) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=36;
+  MODIFY `ID_Pedido` int(100) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=46;
 
 --
 -- AUTO_INCREMENT de la tabla `productos`
 --
 ALTER TABLE `productos`
-  MODIFY `ID_comida` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `ID_comida` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
 
 --
 -- AUTO_INCREMENT de la tabla `roles`
@@ -256,7 +307,7 @@ ALTER TABLE `roles`
 -- AUTO_INCREMENT de la tabla `usuarios`
 --
 ALTER TABLE `usuarios`
-  MODIFY `ID_usuario` int(100) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `ID_usuario` int(100) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- Restricciones para tablas volcadas

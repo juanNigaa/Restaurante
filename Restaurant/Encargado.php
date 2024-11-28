@@ -64,6 +64,8 @@
         <p><a href="trabajadores.php">Ver Trabajadores</a></p>
         <p><a href="Loggin.php">Volver al Login</a></p>
         <p><a href="Nmesa.php">Dar alta nueva mesa</a></p>
+        <p><a href="Rendimiento.php">Ver el rendimiento del restaurante</a></p>
+
 </section>
 </body>
 </html>
