@@ -4,13 +4,12 @@ session_start();
 
 // Verificación de sesión para asegurar seguridad
 
-
 // Datos del formulario 
 $usuario = $_POST['Usuario'];
 $contrasena = $_POST['Contrasena'];
 
 // Validación en la base de datos
-$validar = mysqli_query($conn, "SELECT * FROM usuarios WHERE Usuario='$usuario' AND Contrasena='$contrasena'");
+$validar = mysqli_query($conn, "SELECT * FROM usuarios WHERE Usuario='$usuario' AND Contrasena='$contrasena' AND Estado='Activo'");
 
 if (mysqli_num_rows($validar) > 0) {
     $fila = mysqli_fetch_assoc($validar);  
@@ -29,6 +28,8 @@ if (mysqli_num_rows($validar) > 0) {
 
     exit(); 
 } else {
-    header("Fail.php"); 
+    // Si las credenciales no son válidas o el usuario no está activo
+    header("Location: Fail.php"); 
+    exit();
 }
 ?>

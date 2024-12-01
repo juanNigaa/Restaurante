@@ -30,8 +30,8 @@ if (isset($_FILES['Foto']) && $_FILES['Foto']['error'] == 0) {
 }
 
 // Insertar datos en la base de datos
-$consulta = "INSERT INTO usuarios (Nombre, Usuario, Contrasena, ID_rol, DNI, Foto_DNI) 
-             VALUES ('$nombre', '$usuario', '$contraseña', '$rol', '$DNI', '$Foto')";
+$consulta = "INSERT INTO usuarios (Nombre, Usuario, Contrasena, ID_rol, DNI, Foto_DNI,Estado) 
+             VALUES ('$nombre', '$usuario', '$contraseña', '$rol', '$DNI', '$Foto','Activo')";
 
 if (mysqli_query($conn, $consulta)) {
     // Redirigir a la página de inicio de sesión

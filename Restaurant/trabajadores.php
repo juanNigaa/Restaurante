@@ -74,35 +74,36 @@
 <body>
     <h1>Trabajadores del Restaurante</h1>
     <?php
-         include("conexion.php");
-         $consulta = "SELECT ID_usuario, Nombre, Usuario, ID_rol, Foto_DNI FROM usuarios";
-         $result = mysqli_query($conn, $consulta);
-     
-         echo mysqli_error($conn);
-         if (mysqli_num_rows($result) > 0) {
-             echo "<table>";
-             echo "<tr><th>ID Usuario</th><th>Nombre</th><th>Usuario</th><th>Rol</th><th>Foto</th></tr>";
-             while ($row = mysqli_fetch_array($result)) {
-                 echo "<tr>";
-                 echo "<td>" . $row['ID_usuario'] . "</td>";
-                 echo "<td>" . $row['Nombre'] . "</td>";
-                 echo "<td>" . $row['Usuario'] . "</td>";
-                 echo "<td>" . $row['ID_rol'] . "</td>";
-                 
-                 // Mostrar la imagen
-                 if (!empty($row['Foto_DNI'])) {
-                     echo "<td><img src='" . $row['Foto_DNI'] . "' class='foto' alt='Foto DNI'></td>";
-                 } else {
-                     echo "<td>No disponible</td>";  // Si no hay imagen, muestra "No disponible"
-                 }
-                 
-                 echo "</tr>";
+     include("conexion.php");
+     $consulta = "SELECT ID_usuario, Nombre, Usuario, ID_rol, Foto_DNI FROM usuarios WHERE Estado = 'Activo'";
+     $result = mysqli_query($conn, $consulta);
+ 
+     echo mysqli_error($conn);
+     if (mysqli_num_rows($result) > 0) {
+         echo "<table>";
+         echo "<tr><th>ID Usuario</th><th>Nombre</th><th>Usuario</th><th>Rol</th><th>Foto</th></tr>";
+         while ($row = mysqli_fetch_array($result)) {
+             echo "<tr>";
+             echo "<td>" . $row['ID_usuario'] . "</td>";
+             echo "<td>" . $row['Nombre'] . "</td>";
+             echo "<td>" . $row['Usuario'] . "</td>";
+             echo "<td>" . $row['ID_rol'] . "</td>";
+             
+             // Mostrar la imagen
+             if (!empty($row['Foto_DNI'])) {
+                 echo "<td><img src='" . $row['Foto_DNI'] . "' class='foto' alt='Foto DNI'></td>";
+             } else {
+                 echo "<td>No disponible</td>";  // Si no hay imagen, muestra "No disponible"
              }
-             echo "</table>";
-         } else {
-             echo "<p class='no-data'>No hay trabajadores registrados en el sistema.</p>";
+             
+             echo "</tr>";
          }
-    ?>
+         echo "</table>";
+     } else {
+         echo "<p class='no-data'>No hay trabajadores registrados en el sistema.</p>";
+     }
+?>
+
     <p><a href="Encargado.php">Volver al menú Encargado</a></p>
 </body>
 </html>

@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 26-11-2024 a las 14:33:27
+-- Tiempo de generación: 30-11-2024 a las 17:47:48
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.0.30
 
@@ -95,7 +95,7 @@ CREATE TABLE `mesas` (
 --
 
 INSERT INTO `mesas` (`Numero_mesa`, `Estado`, `Numero_comensales`, `ID_usuario`) VALUES
-(1, 'Ocupada', 5, 2),
+(1, 'Ocupada', 0, 2),
 (2, 'Ocupada', 2, 4),
 (3, 'Ocupada', 0, 3),
 (4, 'Ocupada', 4, 1);
@@ -128,10 +128,10 @@ INSERT INTO `pedidos` (`ID_Pedido`, `ID_usuario`, `Numeromesa`, `Fecha`, `fecha_
 (36, 2, 1, '2024-11-22', '2024-11-22 10:51:49', 'pagado'),
 (37, 2, 1, '2024-11-22', '2024-11-22 11:26:50', 'pagado'),
 (38, 2, 1, '2024-11-22', '2024-11-22 11:28:51', 'pagado'),
-(39, 2, 1, '2024-11-25', '2024-11-25 09:16:25', 'pendiente'),
-(40, 2, 1, '2024-11-25', '2024-11-25 09:21:09', 'pendiente'),
+(39, 2, 1, '2024-11-25', '2024-11-25 09:16:25', 'pagado'),
+(40, 2, 1, '2024-11-25', '2024-11-25 09:21:09', 'pagado'),
 (41, 2, 2, '2024-11-25', '2024-11-25 11:47:53', 'pendiente'),
-(42, 2, 1, '2024-11-26', '2024-11-26 09:24:45', 'pendiente'),
+(42, 2, 1, '2024-11-26', '2024-11-26 09:24:45', 'pagado'),
 (43, 2, 3, '2024-11-26', '2024-11-26 10:15:27', 'pagado'),
 (44, 2, 3, '2024-11-26', '2024-11-26 10:15:57', 'pagado'),
 (45, 2, 3, '2024-11-26', '2024-11-26 10:16:48', 'pagado');
@@ -208,20 +208,21 @@ CREATE TABLE `usuarios` (
   `Contrasena` varchar(12) NOT NULL,
   `ID_rol` int(100) NOT NULL,
   `Foto_DNI` varchar(255) NOT NULL,
-  `DNI` varchar(11) NOT NULL
+  `DNI` varchar(11) NOT NULL,
+  `Estado` set('Activo','Suspendido','','') NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_spanish_ci;
 
 --
 -- Volcado de datos para la tabla `usuarios`
 --
 
-INSERT INTO `usuarios` (`ID_usuario`, `Nombre`, `Usuario`, `Contrasena`, `ID_rol`, `Foto_DNI`, `DNI`) VALUES
-(1, 'Juan andres', 'JuanM', 'narutosxd@', 1, 'Imagenes/NIE_encargado.jpg', 'z0185325x'),
-(2, 'Daniel matias', 'Dani23', 'DAW23', 2, 'Imagenes/Dni1.png', '20136564R'),
-(3, 'Diego armando', 'Eldiego', 'DAW1234', 2, 'Imagenes/Dni2.png', '123456789z'),
-(4, 'Benito camelas', 'BenitoxD', '12345', 2, 'Imagenes/DNI_camarero.jpg', '54265642A'),
-(5, 'Victor', 'Victorino', '1234567', 1, 'Imagenes/198780_1.jpg', 'A14255125'),
-(6, 'Roony', 'ColemanRony', '123456', 2, 'Imagenes/67443f5be0dd1_USUARIo.png', '12356789A');
+INSERT INTO `usuarios` (`ID_usuario`, `Nombre`, `Usuario`, `Contrasena`, `ID_rol`, `Foto_DNI`, `DNI`, `Estado`) VALUES
+(1, 'Juan andres', 'JuanM', 'narutosxd@', 1, 'Imagenes/NIE_encargado.jpg', 'z0185325x', 'Activo'),
+(2, 'Daniel matias', 'Dani23', 'DAW23', 2, 'Imagenes/Dni1.png', '20136564R', 'Activo'),
+(3, 'Diego armando', 'Eldiego', 'DAW1234', 2, 'Imagenes/Dni2.png', '123456789z', 'Activo'),
+(4, 'Benito camelas', 'BenitoxD', '12345', 2, 'Imagenes/DNI_camarero.jpg', '54265642A', 'Activo'),
+(5, 'Victor', 'Victorino', '1234567', 1, 'Imagenes/198780_1.jpg', 'A14255125', 'Activo'),
+(6, 'Roony', 'ColemanRony', '123456', 2, 'Imagenes/67443f5be0dd1_USUARIo.png', '12356789A', 'Activo');
 
 --
 -- Índices para tablas volcadas

@@ -38,7 +38,7 @@
             color: #666;
         }
 
-        input[type="number"] {
+        select {
             width: 100%;
             padding: 10px;
             margin-bottom: 20px;
@@ -81,10 +81,20 @@
 <body>
     <section>
         <form action="Eliminar.php" method="POST">
-            <h2>Eliminar camarero</h2>
-            <label for="Usuario">ID Camarero:</label>
-            <input type="number" placeholder="ID del camarero" name="Usuario" id="Usuario" maxlength="2" required>
-            <input type="submit" value="Eliminar">
+            <h2>Suspender camarero</h2>
+            <label for="Usuario">Selecciona el camarero:</label>
+            <select name="Usuario" id="Usuario" required>
+                <?php
+                include("conexion.php");
+                $query = "SELECT ID_usuario, Nombre FROM usuarios WHERE Estado = 'Activo'";
+                $result = mysqli_query($conn, $query);
+
+                while ($row = mysqli_fetch_assoc($result)) {
+                    echo "<option value='{$row['ID_usuario']}'>{$row['Nombre']}</option>";
+                }
+                ?>
+            </select>
+            <input type="submit" value="Suspender">
         </form>
     </section>
     <p><a href="Encargado.php">Volver al menú</a></p> 

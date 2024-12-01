@@ -92,6 +92,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirmar_pedido'])) 
 <head>
     <meta charset="UTF-8">
     <title>Ingresar Pedido</title>
+    <script type="text/javascript" src="js/qz-tray.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qz-tray/2.1.0/qz-tray.js"></script>
     <style>
         /* Estilo básico para el formulario */
         * {
@@ -218,24 +220,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirmar_pedido'])) 
                 <?php endforeach; ?>
             </select>
 
-            <!-- Vista previa de la imagen -->
+            
             <div class="preview" id="preview">
                 <p>Selecciona un producto para ver su imagen.</p>
             </div>
 
-            <!-- Cantidad -->
+            
             <label for="cantidad">Cantidad:</label>
             <input type="number" id="cantidad" name="cantidad" required>
 
-            <!-- Notas -->
+            
             <label for="nota">Notas:</label>
             <input type="text" id="nota" name="nota" placeholder="Ejemplo: Cocacola con hielo">
 
-            <!-- Precio y Nombre (ocultos, se envían automáticamente) -->
+            
             <input type="hidden" id="precio" name="precio">
             <input type="hidden" id="nombre" name="nombre">
 
-            <!-- Botón para agregar línea -->
+           
             <input type="submit" value="Agregar Producto">
         </form>
     <?php endif; ?>
@@ -255,7 +257,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirmar_pedido'])) 
             <input type="number" name="ID_usuario" placeholder="ID Usuario" required>
             <input type="submit" name="confirmar_pedido" value="Confirmar Pedido">
             <input type="submit" name="limpiar_pedidos" value="Limpiar Pedido">
+            
         </form>
+        <button id="printButton">Imprimir Ticket</button>
     <?php else: ?>
         <p>No hay productos en el pedido.</p>
     <?php endif; ?>
@@ -270,6 +274,76 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirmar_pedido'])) 
         var preview = document.getElementById('preview');
         preview.innerHTML = `<img src="${imageUrl}" alt="Vista previa">`;
     });
+    const PRINTER_NAME = "RP-10N"; // Cambia esto por el nombre exacto de tu impresora
+
+// Conectar a QZ Tray
+async function connectToQZTray() {
+    try {
+        await qz.websocket.connect(); // Conecta QZ Tray
+        console.log("Conectado a QZ Tray.");
+    } catch (err) {
+        console.error("Error al conectar QZ Tray:", err);
+    }
+}
+
+// Configuración de la impresora
+async function getPrinterConfig() {
+    try {
+        const config = qz.configs.create(PRINTER_NAME); // Usa la constante PRINTER_NAME
+        console.log("Configuración de impresora creada:", config);
+        return config;
+    } catch (err) {
+        console.error("Error al configurar la impresora:", err);
+    }
+}
+
+// Función para imprimir el ticket con los pedidos del formulario
+async function imprimirTicket() {
+    try {
+        const config = await getPrinterConfig(); // Configurar la impresora
+
+        // Obtener las líneas de pedido desde PHP (almacenadas en $_SESSION['lineas_pedido'])
+        var lineasPedido = <?= json_encode($_SESSION['lineas_pedido']) ?>;
+
+        if (lineasPedido.length === 0) {
+            alert("No hay productos en el pedido para imprimir.");
+            return;
+        }
+
+        // Generar el contenido del ticket
+        var ticket = "Ticket de Pedido\n";
+        ticket += "Mesa: <?= htmlspecialchars($numeroMesa) ?>\n\n";
+        lineasPedido.forEach(function(linea) {
+            ticket += `${linea.cantidad}x ${linea.nombre}\n`;
+            if (linea.nota) {
+                ticket += `Nota: ${linea.nota}\n`;
+            }
+        });
+        ticket += "\n\n";
+        ticket += "\n\n\n";  // Esto agrega espacio adicional
+
+        // Comando ESC/POS para cortar el papel
+        var cortarPapel = '\x1D\x56\x00';  // Comando para cortar el papel
+
+        // Preparar los datos en formato de texto plano para la impresora
+        const data = [
+            { type: 'raw', format: 'plain', data: ticket + cortarPapel }  // Agregar el comando de corte al final
+        ];
+
+        // Imprimir el ticket
+        await qz.print(config, data);
+        console.log("Ticket enviado a la impresora.");
+    } catch (err) {
+        console.error("Error al imprimir el ticket:", err);
+    }
+}
+
+// Conectar a QZ Tray al cargar la página
+connectToQZTray();
+
+// Asociar evento al botón para imprimir
+document.getElementById('printButton').addEventListener('click', imprimirTicket);
+    
 </script>
 <p><a href="mesas.php">Volver a las mesas</a></p>
 
